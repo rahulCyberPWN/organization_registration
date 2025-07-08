@@ -2,10 +2,14 @@ import React from 'react';
 import { AuthProvider, useAuth } from './contexts/AuthContext.jsx';
 import AuthPage from './components/AuthPage.jsx';
 import RegistrationForm from './components/RegistrationForm.jsx';
-import ConsentManagement from './components/ConsentManagement.jsx';
+import Dashboard from './components/Dashboard.jsx';
+import AgreementManagement from './components/AgreementManagement.jsx';
+import AgreementForm from './components/AgreementForm.jsx';
 
 function AppContent() {
   const { isAuthenticated, isLoading, hasCompletedProfile } = useAuth();
+  const [currentView, setCurrentView] = React.useState('dashboard');
+  const [editingAgreement, setEditingAgreement] = React.useState(null);
 
   if (isLoading) {
     return (
@@ -26,8 +30,53 @@ function AppContent() {
     return <RegistrationForm />;
   }
 
-  // Show consent management dashboard
-  return <ConsentManagement />;
+  const handleNavigateToAgreements = () => {
+    setCurrentView('agreements');
+  };
+
+  const handleBackToDashboard = () => {
+    setCurrentView('dashboard');
+    setEditingAgreement(null);
+  };
+
+  const handleEditAgreement = (agreement) => {
+    setEditingAgreement(agreement);
+    setCurrentView('form');
+  };
+
+  const handleCreateAgreement = () => {
+    setEditingAgreement(null);
+    setCurrentView('form');
+  };
+
+  const handleSaveAgreement = (agreementData) => {
+    console.log('Agreement saved:', agreementData);
+    // Here you would typically save to your backend
+    setCurrentView('agreements');
+    setEditingAgreement(null);
+  };
+
+  // Render different views based on current state
+  switch (currentView) {
+    case 'agreements':
+      return (
+        <AgreementManagement
+          onBack={handleBackToDashboard}
+          onEditAgreement={handleEditAgreement}
+          onCreateAgreement={handleCreateAgreement}
+        />
+      );
+    case 'form':
+      return (
+        <AgreementForm
+          onBack={() => setCurrentView('agreements')}
+          onSave={handleSaveAgreement}
+          editingAgreement={editingAgreement}
+        />
+      );
+    default:
+      return <Dashboard onNavigateToAgreements={handleNavigateToAgreements} />;
+  }
 }
 
 function App() {
